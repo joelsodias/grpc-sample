@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcMarket";
+
+// Serviço de cotação de ativos
+service MarketData {
+  rpc SubscribePrices(PriceRequest) returns (stream PriceResponse);
+}
+
+// Serviço de ordens de compra e venda
+service TradeService {
+  rpc PlaceOrders(stream TradeOrder) returns (TradeSummary);
+}
+
+// Serviço de chat entre traders
+service TradingChat {
+  rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+}
+
+// Definição das mensagens
+message PriceRequest {
+  string asset = 1;
+}
+
+message PriceResponse {
+  string asset = 1;
+  double price = 2;
+  string timestamp = 3;
+}
+
+message TradeOrder {
+  string traderId = 1;
+  string asset = 2;
+  int32 quantity = 3;
+  string orderType = 4; // "BUY" ou "SELL"
+}
+
+message TradeSummary {
+  int32 totalOrders = 1;
+  double totalVolume = 2;
+}
+
+message ChatMessage {
+  string traderId = 1;
+  string message = 2;
+  string timestamp = 3;
+}
