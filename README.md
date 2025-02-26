@@ -3,6 +3,33 @@
 ## Overview
 This project demonstrates a gRPC-based client-server application implementing various streaming patterns for a financial market data system.
 
+## Behavior
+
+The client program demonstrates different gRPC streaming patterns:
+
+1. **Unary Call (Greeter Service)**
+   - Makes a simple request to get a greeting message
+   - Shows basic request-response pattern
+
+2. **Server Streaming (Market Data Service)** 
+   - Subscribes to real-time price updates
+   - Continuously receives and displays price changes
+   - Can filter by asset symbols
+
+3. **Client Streaming (Trade Service)**
+   - Sends multiple trade orders in a single session
+   - Receives summary after all orders are processed
+   - Shows batching of related requests
+
+4. **Bi-directional Streaming (Trading Chat)**
+   - Connects to chat room and sends messages
+   - Receives messages from other connected clients
+   - Demonstrates real-time two-way communication
+
+The client provides a simple console interface to select and test each streaming pattern. All interactions are logged to the console for demonstration purposes.
+
+
+
 ## Services
 
 ### Market Data Service
