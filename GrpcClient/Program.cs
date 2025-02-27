@@ -123,46 +123,73 @@ class Program
 
     static async Task TestTradingChatService(TradingChat.TradingChatClient client)
     {
-        Console.Write("Enter your trader name: ");
-        var traderName = Console.ReadLine();
-
-        using var call = client.Chat();
-        var cts = new CancellationTokenSource();
-
-        // Receive messages
-        var readTask = Task.Run(async () => {
-            try 
-            {
-                while (await call.ResponseStream.MoveNext(cts.Token))
-                {
-                    var message = call.ResponseStream.Current;
-                    Console.WriteLine($"{message.TraderId}: {message.Message}");
-                }
-            }
-            catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
-            {
-                Console.WriteLine("Chat ended");
-            }
-        });
-
-        Console.WriteLine("Start chatting (empty line to exit):");
-        
-        // Send messages
-        while (true)
+        try
         {
-            var content = Console.ReadLine();
-            if (string.IsNullOrEmpty(content)) break;
+            Console.Write("Enter your trader name: ");
+            var traderName = Console.ReadLine();
 
-            await call.RequestStream.WriteAsync(new ChatMessage 
-            {
-                TraderId = traderName,
-                Message = content,
-                Timestamp = DateTime.UtcNow.ToString("o")
+            using var call = client.Chat();
+            var cts = new CancellationTokenSource();
+
+            // Receive messages
+            var readTask = Task.Run(async () => {
+                try 
+                {
+                    while (await call.ResponseStream.MoveNext(cts.Token))
+                    {
+                        var message = call.ResponseStream.Current;
+                        Console.WriteLine($"{message.TraderId}: {message.Message}");
+                    }
+                }
+                catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
+                {
+                    Console.WriteLine("Chat ended");
+                }
             });
-        }
 
-        cts.Cancel();
-        await call.RequestStream.CompleteAsync();
+            // Add proper error handling for the read task
+            readTask.ContinueWith(t =>
+            {
+                if (t.Exception?.InnerException is RpcException rpcEx)
+                {
+                    if (rpcEx.StatusCode == StatusCode.Cancelled)
+                    {
+                        Console.WriteLine("Chat connection closed by server");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Chat error: {rpcEx.Status.Detail}");
+                    }
+                }
+            }, TaskContinuationOptions.OnlyOnFaulted);
+
+            Console.WriteLine("Start chatting (empty line to exit):");
+            
+            // Send messages
+            while (true)
+            {
+                var content = Console.ReadLine();
+                if (string.IsNullOrEmpty(content)) break;
+
+                await call.RequestStream.WriteAsync(new ChatMessage 
+                {
+                    TraderId = traderName,
+                    Message = content,
+                    Timestamp = DateTime.UtcNow.ToString("o")
+                });
+            }
+
+            cts.Cancel();
+            await call.RequestStream.CompleteAsync();
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
+        {
+            Console.WriteLine("Chat connection closed by server");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in chat: {ex.Message}");
+        }
     }
 }
 

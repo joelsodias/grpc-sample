@@ -14,6 +14,17 @@
             "request": "launch",
             "program": "${workspaceFolder}/GrpcClient/bin/Debug/net9.0/GrpcClient.dll",
             "cwd": "${workspaceFolder}/GrpcClient"
+        },
+        {
+            "name": "Debug GrpcServer Tests",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/GrpcServer.Tests/bin/Debug/net7.0/GrpcServer.Tests.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/GrpcServer.Tests",
+            "console": "internalConsole",
+            "stopAtEntry": false
         }
     ]
 }
